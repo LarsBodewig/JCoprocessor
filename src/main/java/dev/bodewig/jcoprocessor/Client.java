@@ -1,4 +1,4 @@
-package co.gongzh.procbridge;
+package dev.bodewig.jcoprocessor;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -12,9 +12,6 @@ import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
-/**
- * @author Gong Zhang
- */
 public class Client {
 
     private final @NotNull String host;

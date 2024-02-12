@@ -1,4 +1,4 @@
-package co.gongzh.procbridge;
+package dev.bodewig.jcoprocessor;
 
 final class Keys {
 

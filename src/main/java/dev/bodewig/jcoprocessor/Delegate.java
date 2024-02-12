@@ -1,4 +1,4 @@
-package co.gongzh.procbridge;
+package dev.bodewig.jcoprocessor;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -10,9 +10,6 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * @author Gong Zhang
- */
 public abstract class Delegate implements IDelegate {
 
     @NotNull

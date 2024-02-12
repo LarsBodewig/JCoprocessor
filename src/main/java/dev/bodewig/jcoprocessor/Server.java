@@ -1,4 +1,4 @@
-package co.gongzh.procbridge;
+package dev.bodewig.jcoprocessor;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -13,9 +13,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-/**
- * @author Gong Zhang
- */
 public class Server {
 
     private final int port;

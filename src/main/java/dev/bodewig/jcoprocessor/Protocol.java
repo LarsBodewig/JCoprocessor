@@ -1,4 +1,4 @@
-package co.gongzh.procbridge;
+package dev.bodewig.jcoprocessor;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -12,7 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap;
 import java.util.Map;
 
-import static co.gongzh.procbridge.ProtocolException.*;
+import static dev.bodewig.jcoprocessor.ProtocolException.*;
 
 
 final class Protocol {
