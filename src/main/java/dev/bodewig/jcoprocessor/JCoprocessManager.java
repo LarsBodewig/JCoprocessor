@@ -55,7 +55,7 @@ public class JCoprocessManager {
 		}
 	}
 
-	public static void registerShutdownHook() {
+	public static void terminateOnShutdown() {
 		Runtime.getRuntime().addShutdownHook(new Thread(JCoprocessManager::terminate));
 	}
 }

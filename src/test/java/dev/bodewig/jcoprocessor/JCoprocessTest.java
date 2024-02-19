@@ -38,13 +38,13 @@ class JCoprocessTest {
 	}
 
 	JCoprocess process;
-	
+
 	@BeforeAll
 	void setup() throws IOException {
-		JCoprocessManager.registerShutdownHook();
+		JCoprocessManager.terminateOnShutdown();
 		process = JCoprocessManager.spawn(TestServer.class);
 	}
-	
+
 	@Test
 	void test() throws IOException {
 		JSONObject expected = new JSONObject().put("method", "testMethod").put("payload",
