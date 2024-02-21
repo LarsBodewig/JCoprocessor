@@ -26,14 +26,14 @@ public class JCoprocess {
 		String classpath = System.getProperty("java.class.path");
 		String className = server.getName();
 
-		command = new LinkedList<String>();
+		command = new LinkedList<>();
 		command.add(javaBin);
 		command.add("-cp");
 		command.add(classpath);
 		command.add(className);
 	}
 
-	public void start() throws IOException {
+	public void start(long timeoutMillis) throws IOException {
 		synchronized (PORT_LOCK) {
 			int port = findFreePort();
 			command.add(Integer.toString(port));
@@ -41,12 +41,27 @@ public class JCoprocess {
 				ProcessBuilder builder = new ProcessBuilder(command).inheritIO();
 				process = builder.start();
 			}
-			client = new Client(/* localhost */ null, port);
+			try {
+				client = new Client(/* localhost */ null, port, timeoutMillis, null);
+			} catch (RuntimeException e) {
+				stop();
+				throw e;
+			}
 		}
 	}
 
 	public synchronized void stop() {
-		process.destroy();
+		try {
+			if (client != null) {
+				client.close();
+			}
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		} finally {
+			if (process != null) {
+				process.destroy();
+			}
+		}
 	}
 
 	private static int findFreePort() throws IOException {

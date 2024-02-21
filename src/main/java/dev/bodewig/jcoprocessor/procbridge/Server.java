@@ -1,7 +1,6 @@
 package dev.bodewig.jcoprocessor.procbridge;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
@@ -10,7 +9,6 @@ import java.util.concurrent.Executors;
 public abstract class Server implements IDelegate {
 
 	protected ExecutorService executor;
-	protected PrintStream logger;
 	protected final int port;
 
 	protected ServerSocket serverSocket;
@@ -22,11 +20,6 @@ public abstract class Server implements IDelegate {
 		this.started = false;
 		this.executor = null;
 		this.serverSocket = null;
-		this.logger = System.err;
-	}
-
-	public PrintStream getLogger() {
-		return logger;
 	}
 
 	public final int getPort() {
@@ -35,10 +28,6 @@ public abstract class Server implements IDelegate {
 
 	public final synchronized boolean isStarted() {
 		return started;
-	}
-
-	public void setLogger(PrintStream logger) {
-		this.logger = logger;
 	}
 
 	public synchronized void start() {
@@ -57,10 +46,10 @@ public abstract class Server implements IDelegate {
 		final ExecutorService executor = Executors.newCachedThreadPool();
 		this.executor = executor;
 		executor.execute(() -> {
-			while (true) {
+			while (!Thread.currentThread().isInterrupted()) {
 				try {
 					Socket socket = serverSocket.accept();
-					Connection conn = new Connection(this, socket, this);
+					Connection conn = new Connection(this, socket);
 					synchronized (Server.this) {
 						if (!started) {
 							return; // finish listener

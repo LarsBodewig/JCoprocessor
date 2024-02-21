@@ -13,6 +13,7 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.json.JSONObject;
 
@@ -20,12 +21,16 @@ public final class Protocol {
 
 	private static final byte[] FLAG = { 'p', 'b' };
 
-	private static Map.Entry<StatusCode, JSONObject> read(InputStream stream) throws IOException, ProtocolException {
+	private static Optional<Map.Entry<StatusCode, JSONObject>> read(InputStream stream)
+			throws IOException, ProtocolException {
 		int b;
 
 		// 1. FLAG
 		b = stream.read();
-		if (b == -1 || b != FLAG[0]) {
+		if (b == -1) {
+			return Optional.empty();
+		}
+		if (b != FLAG[0]) {
 			throw new ProtocolException(UNRECOGNIZED_PROTOCOL);
 		}
 		b = stream.read();
@@ -115,35 +120,39 @@ public final class Protocol {
 		try {
 			String jsonText = new String(buf, StandardCharsets.UTF_8);
 			JSONObject body = new JSONObject(jsonText);
-			return new AbstractMap.SimpleEntry<>(statusCode, body);
+			return Optional.of(new AbstractMap.SimpleEntry<>(statusCode, body));
 		} catch (Exception ex) {
 			throw new ProtocolException(INVALID_BODY);
 		}
 	}
 
-	public static Map.Entry<String, JSONObject> readRequest(InputStream stream) throws IOException, ProtocolException {
-		Map.Entry<StatusCode, JSONObject> entry = read(stream);
-		StatusCode statusCode = entry.getKey();
-		JSONObject body = entry.getValue();
-		if (statusCode != StatusCode.REQUEST) {
-			throw new ProtocolException(INVALID_STATUS_CODE);
-		}
-		String method = body.optString(Keys.METHOD);
-		JSONObject payload = new JSONObject(body.opt(Keys.PAYLOAD));
-		return new AbstractMap.SimpleEntry<>(method, payload);
+	public static Optional<Map.Entry<String, JSONObject>> readRequest(InputStream stream)
+			throws IOException, ProtocolException {
+		return read(stream).map(entry -> {
+			StatusCode statusCode = entry.getKey();
+			JSONObject body = entry.getValue();
+			if (statusCode != StatusCode.REQUEST) {
+				throw new ProtocolException(INVALID_STATUS_CODE);
+			}
+			String method = body.optString(Keys.METHOD);
+			JSONObject payload = body.optJSONObject(Keys.PAYLOAD);
+			return new AbstractMap.SimpleEntry<>(method, payload);
+		});
 	}
 
-	public static Map.Entry<StatusCode, Object> readResponse(InputStream stream) throws IOException, ProtocolException {
-		Map.Entry<StatusCode, JSONObject> entry = read(stream);
-		StatusCode statusCode = entry.getKey();
-		JSONObject body = entry.getValue();
-		if (statusCode == StatusCode.GOOD_RESPONSE) {
-			return new AbstractMap.SimpleEntry<>(StatusCode.GOOD_RESPONSE, body.opt(Keys.PAYLOAD));
-		} else if (statusCode == StatusCode.BAD_RESPONSE) {
-			return new AbstractMap.SimpleEntry<>(StatusCode.BAD_RESPONSE, body.optString(Keys.MESSAGE));
-		} else {
-			throw new ProtocolException(INVALID_STATUS_CODE);
-		}
+	public static Optional<Map.Entry<StatusCode, Object>> readResponse(InputStream stream)
+			throws IOException, ProtocolException {
+		return read(stream).map(entry -> {
+			StatusCode statusCode = entry.getKey();
+			JSONObject body = entry.getValue();
+			if (statusCode == StatusCode.GOOD_RESPONSE) {
+				return new AbstractMap.SimpleEntry<>(StatusCode.GOOD_RESPONSE, body.optJSONObject(Keys.PAYLOAD));
+			} else if (statusCode == StatusCode.BAD_RESPONSE) {
+				return new AbstractMap.SimpleEntry<>(StatusCode.BAD_RESPONSE, body.optString(Keys.MESSAGE));
+			} else {
+				throw new ProtocolException(INVALID_STATUS_CODE);
+			}
+		});
 	}
 
 	private static void write(OutputStream stream, StatusCode statusCode, JSONObject body) throws IOException {
@@ -188,7 +197,7 @@ public final class Protocol {
 		write(stream, StatusCode.BAD_RESPONSE, body);
 	}
 
-	public static void writeGoodResponse(OutputStream stream, Object payload) throws IOException {
+	public static void writeGoodResponse(OutputStream stream, JSONObject payload) throws IOException {
 		JSONObject body = new JSONObject();
 		if (payload != null) {
 			body.put(Keys.PAYLOAD, payload);
@@ -196,7 +205,7 @@ public final class Protocol {
 		write(stream, StatusCode.GOOD_RESPONSE, body);
 	}
 
-	public static void writeRequest(OutputStream stream, String method, Object payload) throws IOException {
+	public static void writeRequest(OutputStream stream, String method, JSONObject payload) throws IOException {
 		JSONObject body = new JSONObject();
 		if (method != null) {
 			body.put(Keys.METHOD, method);

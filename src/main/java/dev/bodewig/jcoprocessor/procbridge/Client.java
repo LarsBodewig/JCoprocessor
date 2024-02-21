@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
@@ -14,7 +17,7 @@ public class Client implements AutoCloseable {
 	public static final long FOREVER = 0;
 
 	private final Executor executor;
-	private final Socket socket;
+	private Socket socket;
 
 	private final long timeout;
 
@@ -23,13 +26,22 @@ public class Client implements AutoCloseable {
 	}
 
 	public Client(String host, int port, long timeout, Executor executor) throws ClientException {
-		try {
-			this.socket = new Socket(host, port);
-		} catch (IOException e) {
-			throw new ClientException(e);
-		}
 		this.timeout = timeout;
 		this.executor = executor;
+		Instant tryUntil = Instant.now().plus(Duration.ofMillis(timeout));
+		IOException ex;
+		do {
+			try {
+				ex = null;
+				socket = new Socket(host, port);
+			} catch (IOException e) {
+				ex = e;
+			}
+		} while (!Thread.currentThread().isInterrupted() && ex != null
+				&& (timeout <= 0 || Instant.now().isBefore(tryUntil)));
+		if (ex != null) {
+			throw new ClientException(ex);
+		}
 	}
 
 	public Executor getExecutor() {
@@ -50,15 +62,24 @@ public class Client implements AutoCloseable {
 
 	public final JSONObject request(String method, JSONObject payload)
 			throws ClientException, TimeoutException, ServerException {
+		if (socket.isClosed()) {
+			throw new ClientException(new SocketException("Socket already closed"));
+		}
+
 		final StatusCode[] respStatusCode = { null };
 		final Object[] respPayload = { null };
 		final Throwable[] innerException = { null };
 
 		Runnable task = () -> {
-			try (OutputStream os = socket.getOutputStream(); InputStream is = socket.getInputStream()) {
+			try {
+				OutputStream os = socket.getOutputStream();
+				InputStream is = socket.getInputStream();
 
 				Protocol.writeRequest(os, method, payload);
-				Map.Entry<StatusCode, Object> entry = Protocol.readResponse(is);
+				Map.Entry<StatusCode, Object> entry;
+				do {
+					entry = Protocol.readResponse(is).orElse(null);
+				} while (!Thread.currentThread().isInterrupted() && !socket.isInputShutdown() && entry == null);
 				respStatusCode[0] = entry.getKey();
 				respPayload[0] = entry.getValue();
 
@@ -66,7 +87,6 @@ public class Client implements AutoCloseable {
 				innerException[0] = ex;
 			}
 		};
-
 		if (timeout <= 0) {
 			task.run();
 		} else {
@@ -82,11 +102,11 @@ public class Client implements AutoCloseable {
 			throw new ServerException((String) respPayload[0]);
 		}
 
-		return new JSONObject(respPayload[0]);
+		return (JSONObject) respPayload[0];
 	}
 
 	@Override
-	public void close() throws Exception {
+	public void close() throws IOException {
 		socket.close();
 	}
 }
