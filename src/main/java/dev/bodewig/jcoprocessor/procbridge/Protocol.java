@@ -10,6 +10,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap;
 import java.util.Map;
@@ -134,8 +136,8 @@ public final class Protocol {
 			if (statusCode != StatusCode.REQUEST) {
 				throw new ProtocolException(INVALID_STATUS_CODE);
 			}
-			String method = body.optString(Keys.METHOD);
-			JSONObject payload = body.optJSONObject(Keys.PAYLOAD);
+			String method = body.optString(Key.METHOD.name());
+			JSONObject payload = body.optJSONObject(Key.PAYLOAD.name());
 			return new AbstractMap.SimpleEntry<>(method, payload);
 		});
 	}
@@ -146,9 +148,11 @@ public final class Protocol {
 			StatusCode statusCode = entry.getKey();
 			JSONObject body = entry.getValue();
 			if (statusCode == StatusCode.GOOD_RESPONSE) {
-				return new AbstractMap.SimpleEntry<>(StatusCode.GOOD_RESPONSE, body.optJSONObject(Keys.PAYLOAD));
+				return new AbstractMap.SimpleEntry<>(StatusCode.GOOD_RESPONSE,
+						body.optJSONObject(Key.PAYLOAD.name()));
 			} else if (statusCode == StatusCode.BAD_RESPONSE) {
-				return new AbstractMap.SimpleEntry<>(StatusCode.BAD_RESPONSE, body.optString(Keys.MESSAGE));
+				return new AbstractMap.SimpleEntry<>(StatusCode.BAD_RESPONSE,
+						body.optString(Key.MESSAGE.name()));
 			} else {
 				throw new ProtocolException(INVALID_STATUS_CODE);
 			}
@@ -189,10 +193,13 @@ public final class Protocol {
 		stream.flush();
 	}
 
-	public static void writeBadResponse(OutputStream stream, String message) throws IOException {
+	public static void writeBadResponse(OutputStream stream, Exception exception) throws IOException {
 		JSONObject body = new JSONObject();
-		if (message != null) {
-			body.put(Keys.MESSAGE, message);
+		if (exception != null) {
+			try (StringWriter sw = new StringWriter(); PrintWriter pw = new PrintWriter(sw)) {
+				exception.printStackTrace(pw);
+				body.put(Key.MESSAGE.name(), sw.toString());
+			}
 		}
 		write(stream, StatusCode.BAD_RESPONSE, body);
 	}
@@ -200,7 +207,7 @@ public final class Protocol {
 	public static void writeGoodResponse(OutputStream stream, JSONObject payload) throws IOException {
 		JSONObject body = new JSONObject();
 		if (payload != null) {
-			body.put(Keys.PAYLOAD, payload);
+			body.put(Key.PAYLOAD.name(), payload);
 		}
 		write(stream, StatusCode.GOOD_RESPONSE, body);
 	}
@@ -208,10 +215,10 @@ public final class Protocol {
 	public static void writeRequest(OutputStream stream, String method, JSONObject payload) throws IOException {
 		JSONObject body = new JSONObject();
 		if (method != null) {
-			body.put(Keys.METHOD, method);
+			body.put(Key.METHOD.name(), method);
 		}
 		if (payload != null) {
-			body.put(Keys.PAYLOAD, payload);
+			body.put(Key.PAYLOAD.name(), payload);
 		}
 		write(stream, StatusCode.REQUEST, body);
 	}

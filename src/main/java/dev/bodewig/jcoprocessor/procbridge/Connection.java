@@ -42,7 +42,7 @@ public class Connection implements Runnable {
 				}
 
 				if (exception != null) {
-					Protocol.writeBadResponse(os, exception.getMessage());
+					Protocol.writeBadResponse(os, exception);
 				} else {
 					Protocol.writeGoodResponse(os, result);
 				}

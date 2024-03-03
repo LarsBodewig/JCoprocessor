@@ -66,6 +66,7 @@ public class Client implements AutoCloseable {
 			throw new ClientException(new SocketException("Socket already closed"));
 		}
 
+		// final 1-sized array for usage in lambda
 		final StatusCode[] respStatusCode = { null };
 		final Object[] respPayload = { null };
 		final Throwable[] innerException = { null };
