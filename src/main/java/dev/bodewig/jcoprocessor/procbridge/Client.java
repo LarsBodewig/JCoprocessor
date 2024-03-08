@@ -12,6 +12,11 @@ import java.util.concurrent.Executor;
 
 import org.json.JSONObject;
 
+/**
+ * 
+ * @author Gong Zhang
+ * @author Lars Bodewig
+ */
 public class Client implements AutoCloseable {
 
 	public static final long FOREVER = 0;

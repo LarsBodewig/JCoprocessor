@@ -1,5 +1,10 @@
 package dev.bodewig.jcoprocessor.procbridge;
 
+/**
+ * 
+ * @author Gong Zhang
+ * @author Lars Bodewig
+ */
 public class ProtocolException extends RuntimeException {
 
 	protected static final String INCOMPATIBLE_VERSION = "incompatible protocol version";

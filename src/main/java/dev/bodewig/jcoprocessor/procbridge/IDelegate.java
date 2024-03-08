@@ -2,6 +2,11 @@ package dev.bodewig.jcoprocessor.procbridge;
 
 import org.json.JSONObject;
 
+/**
+ * 
+ * @author Gong Zhang
+ * @author Lars Bodewig
+ */
 public interface IDelegate {
 
 	/**

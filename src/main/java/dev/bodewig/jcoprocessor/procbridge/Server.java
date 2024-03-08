@@ -6,6 +6,11 @@ import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * 
+ * @author Gong Zhang
+ * @author Lars Bodewig
+ */
 public abstract class Server implements IDelegate {
 
 	protected ExecutorService executor;

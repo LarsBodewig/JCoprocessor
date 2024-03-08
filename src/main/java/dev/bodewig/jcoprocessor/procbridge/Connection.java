@@ -9,6 +9,11 @@ import java.util.logging.Logger;
 
 import org.json.JSONObject;
 
+/**
+ * 
+ * @author Gong Zhang
+ * @author Lars Bodewig
+ */
 public class Connection implements Runnable {
 
 	private static final Logger logger = Logger.getLogger(Connection.class.getName());

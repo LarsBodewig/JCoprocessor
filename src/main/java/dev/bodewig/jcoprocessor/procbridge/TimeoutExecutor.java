@@ -5,6 +5,11 @@ import java.util.TimerTask;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Semaphore;
 
+/**
+ * 
+ * @author Gong Zhang
+ * @author Lars Bodewig
+ */
 public final class TimeoutExecutor implements Executor {
 
 	protected final Executor base;

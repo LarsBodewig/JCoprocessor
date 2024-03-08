@@ -19,6 +19,11 @@ import java.util.Optional;
 
 import org.json.JSONObject;
 
+/**
+ * 
+ * @author Gong Zhang
+ * @author Lars Bodewig
+ */
 public final class Protocol {
 
 	private static final byte[] FLAG = { 'p', 'b' };

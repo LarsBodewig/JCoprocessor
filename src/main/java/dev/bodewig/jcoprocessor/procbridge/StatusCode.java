@@ -1,5 +1,10 @@
 package dev.bodewig.jcoprocessor.procbridge;
 
+/**
+ * 
+ * @author Gong Zhang
+ * @author Lars Bodewig
+ */
 public enum StatusCode {
 
 	BAD_RESPONSE(2), GOOD_RESPONSE(1), REQUEST(0);

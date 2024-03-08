@@ -1,5 +1,10 @@
 package dev.bodewig.jcoprocessor.procbridge;
 
+/**
+ * 
+ * @author Gong Zhang
+ * @author Lars Bodewig
+ */
 public class ServerException extends RuntimeException {
 
 	private static final long serialVersionUID = 9194211579590756799L;
