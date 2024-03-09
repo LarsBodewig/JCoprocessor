@@ -10,6 +10,7 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -65,7 +66,42 @@ public class Client implements AutoCloseable {
 		return timeout;
 	}
 
-	public final JSONObject request(String method, JSONObject payload)
+	public final <T> T request(String method, Boolean payload)
+			throws ClientException, TimeoutException, ServerException {
+		return request(method, (Object) payload);
+	}
+
+	public final <T> T request(String method, Double payload)
+			throws ClientException, TimeoutException, ServerException {
+		return request(method, (Object) payload);
+	}
+
+	public final <T> T request(String method, Integer payload)
+			throws ClientException, TimeoutException, ServerException {
+		return request(method, (Object) payload);
+	}
+
+	public final <T> T request(String method, JSONArray payload)
+			throws ClientException, TimeoutException, ServerException {
+		return request(method, (Object) payload);
+	}
+
+	public final <T> T request(String method, JSONObject payload)
+			throws ClientException, TimeoutException, ServerException {
+		return request(method, (Object) payload);
+	}
+
+	public final <T> T request(String method, Long payload) throws ClientException, TimeoutException, ServerException {
+		return request(method, (Object) payload);
+	}
+
+	public final <T> T request(String method, String payload)
+			throws ClientException, TimeoutException, ServerException {
+		return request(method, (Object) payload);
+	}
+
+	@SuppressWarnings("unchecked")
+	public final <T> T request(String method, Object payload)
 			throws ClientException, TimeoutException, ServerException {
 		if (socket.isClosed()) {
 			throw new ClientException(new SocketException("Socket already closed"));
@@ -108,7 +144,7 @@ public class Client implements AutoCloseable {
 			throw new ServerException((String) respPayload[0]);
 		}
 
-		return (JSONObject) respPayload[0];
+		return (T) respPayload[0];
 	}
 
 	@Override

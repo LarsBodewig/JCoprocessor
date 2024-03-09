@@ -7,8 +7,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.json.JSONObject;
-
 /**
  * 
  * @author Gong Zhang
@@ -31,14 +29,14 @@ public class Connection implements Runnable {
 		try (OutputStream os = socket.getOutputStream(); InputStream is = socket.getInputStream()) {
 
 			while (!Thread.currentThread().isInterrupted()) {
-				Map.Entry<String, JSONObject> req;
+				Map.Entry<String, Object> req;
 				do {
 					req = Protocol.readRequest(is).orElse(null);
 				} while (!Thread.currentThread().isInterrupted() && !socket.isInputShutdown() && req == null);
 				String method = req.getKey();
-				JSONObject payload = req.getValue();
+				Object payload = req.getValue();
 
-				JSONObject result = null;
+				Object result = null;
 				Exception exception = null;
 				try {
 					result = server.handleRequest(method, payload);

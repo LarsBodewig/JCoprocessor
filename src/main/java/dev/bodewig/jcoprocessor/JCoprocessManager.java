@@ -11,6 +11,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import dev.bodewig.jcoprocessor.procbridge.Client;
@@ -31,7 +32,35 @@ public class JCoprocessManager {
 		return spawn(klass, Client.FOREVER);
 	}
 
-	public static synchronized Future<Void> broadcast(String method, JSONObject payload) {
+	public static Future<Void> broadcast(String method, Boolean payload) {
+		return broadcast(method, (Object) payload);
+	}
+
+	public static Future<Void> broadcast(String method, Double payload) {
+		return broadcast(method, (Object) payload);
+	}
+
+	public static Future<Void> broadcast(String method, Integer payload) {
+		return broadcast(method, (Object) payload);
+	}
+
+	public static Future<Void> broadcast(String method, JSONArray payload) {
+		return broadcast(method, (Object) payload);
+	}
+
+	public static Future<Void> broadcast(String method, JSONObject payload) {
+		return broadcast(method, (Object) payload);
+	}
+
+	public static Future<Void> broadcast(String method, Long payload) {
+		return broadcast(method, (Object) payload);
+	}
+
+	public static Future<Void> broadcast(String method, String payload) {
+		return broadcast(method, (Object) payload);
+	}
+
+	public static synchronized Future<Void> broadcast(String method, Object payload) {
 		ExecutorService executor = Executors.newCachedThreadPool();
 		try {
 			return CompletableFuture.allOf(processes.parallelStream()

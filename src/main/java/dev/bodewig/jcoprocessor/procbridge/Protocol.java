@@ -133,7 +133,7 @@ public final class Protocol {
 		}
 	}
 
-	public static Optional<Map.Entry<String, JSONObject>> readRequest(InputStream stream)
+	public static Optional<Map.Entry<String, Object>> readRequest(InputStream stream)
 			throws IOException, ProtocolException {
 		return read(stream).map(entry -> {
 			StatusCode statusCode = entry.getKey();
@@ -142,7 +142,7 @@ public final class Protocol {
 				throw new ProtocolException(INVALID_STATUS_CODE);
 			}
 			String method = body.optString(Key.METHOD.name());
-			JSONObject payload = body.optJSONObject(Key.PAYLOAD.name());
+			Object payload = body.opt(Key.PAYLOAD.name());
 			return new AbstractMap.SimpleEntry<>(method, payload);
 		});
 	}
@@ -209,7 +209,7 @@ public final class Protocol {
 		write(stream, StatusCode.BAD_RESPONSE, body);
 	}
 
-	public static void writeGoodResponse(OutputStream stream, JSONObject payload) throws IOException {
+	public static void writeGoodResponse(OutputStream stream, Object payload) throws IOException {
 		JSONObject body = new JSONObject();
 		if (payload != null) {
 			body.put(Key.PAYLOAD.name(), payload);
@@ -217,7 +217,7 @@ public final class Protocol {
 		write(stream, StatusCode.GOOD_RESPONSE, body);
 	}
 
-	public static void writeRequest(OutputStream stream, String method, JSONObject payload) throws IOException {
+	public static void writeRequest(OutputStream stream, String method, Object payload) throws IOException {
 		JSONObject body = new JSONObject();
 		if (method != null) {
 			body.put(Key.METHOD.name(), method);

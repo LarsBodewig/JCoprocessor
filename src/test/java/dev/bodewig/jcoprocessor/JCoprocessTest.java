@@ -24,8 +24,8 @@ class JCoprocessTest {
 		}
 
 		@Override
-		public JSONObject handleRequest(String method, JSONObject payload) {
-			DoubleStream values = payload.getJSONArray("values").toList().stream().map(Object::toString)
+		public Object handleRequest(String method, Object payload) {
+			DoubleStream values = ((JSONObject) payload).getJSONArray("values").toList().stream().map(Object::toString)
 					.mapToDouble(Double::valueOf);
 			double result = switch (method) {
 			case "addition":
