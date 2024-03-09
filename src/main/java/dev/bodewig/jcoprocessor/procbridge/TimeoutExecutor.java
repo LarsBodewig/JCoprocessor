@@ -6,15 +6,30 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Semaphore;
 
 /**
- * 
+ * Executor implementation that stops a task after reaching a timeout
+ *
  * @author Gong Zhang
  * @author Lars Bodewig
  */
 public final class TimeoutExecutor implements Executor {
 
+	/**
+	 * The base executor
+	 */
 	protected final Executor base;
+
+	/**
+	 * The timeout
+	 */
 	protected final long timeout;
 
+	/**
+	 * Create a new TimeoutExecutor that executes a runnable until the timout is
+	 * reached
+	 *
+	 * @param timeout the time before the executor ends the task
+	 * @param base    the base executor
+	 */
 	public TimeoutExecutor(long timeout, Executor base) {
 		this.timeout = timeout;
 		this.base = base;
@@ -58,12 +73,21 @@ public final class TimeoutExecutor implements Executor {
 		}
 	}
 
+	/**
+	 * Get the base executor
+	 *
+	 * @return the base executor
+	 */
 	public Executor getBaseExecutor() {
 		return base;
 	}
 
+	/**
+	 * Get the timeout
+	 *
+	 * @return the timeout
+	 */
 	public long getTimeout() {
 		return timeout;
 	}
-
 }

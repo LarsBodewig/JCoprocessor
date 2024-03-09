@@ -8,7 +8,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * 
+ * A connection between a Server handling a request and a socket
+ *
  * @author Gong Zhang
  * @author Lars Bodewig
  */
@@ -19,6 +20,12 @@ public class Connection implements Runnable {
 	private final Server server;
 	private final Socket socket;
 
+	/**
+	 * Creates a new Connection between the given Server and socket
+	 *
+	 * @param server the Server handling the request
+	 * @param socket the socket to read from and write to
+	 */
 	public Connection(Server server, Socket socket) {
 		this.server = server;
 		this.socket = socket;
@@ -54,5 +61,4 @@ public class Connection implements Runnable {
 			logger.log(Level.SEVERE, "Exception occured in connection on port " + server.getPort(), ex);
 		}
 	}
-
 }

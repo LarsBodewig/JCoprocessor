@@ -20,7 +20,8 @@ import java.util.Optional;
 import org.json.JSONObject;
 
 /**
- * 
+ * Reads and writes requests and responses according to the ProcBridge protocol
+ *
  * @author Gong Zhang
  * @author Lars Bodewig
  */
@@ -133,6 +134,14 @@ public final class Protocol {
 		}
 	}
 
+	/**
+	 * Reads a request from the given InputStream if available
+	 *
+	 * @param stream the stream to read from
+	 * @return an optional tuple of the request method and payload
+	 * @throws IOException       if reading fails
+	 * @throws ProtocolException if the data does not match the protocol
+	 */
 	public static Optional<Map.Entry<String, Object>> readRequest(InputStream stream)
 			throws IOException, ProtocolException {
 		return read(stream).map(entry -> {
@@ -141,12 +150,20 @@ public final class Protocol {
 			if (statusCode != StatusCode.REQUEST) {
 				throw new ProtocolException(INVALID_STATUS_CODE);
 			}
-			String method = body.optString(Key.METHOD.name());
-			Object payload = body.opt(Key.PAYLOAD.name());
+			String method = body.optString(Key.METHOD.toString());
+			Object payload = body.opt(Key.PAYLOAD.toString());
 			return new AbstractMap.SimpleEntry<>(method, payload);
 		});
 	}
 
+	/**
+	 * Reads a response from the given InputStream if available
+	 *
+	 * @param stream the stream to read from
+	 * @return an optional tuple of the response StatusCode and payload
+	 * @throws IOException       if reading fails
+	 * @throws ProtocolException if the data does not match the protocol
+	 */
 	public static Optional<Map.Entry<StatusCode, Object>> readResponse(InputStream stream)
 			throws IOException, ProtocolException {
 		return read(stream).map(entry -> {
@@ -154,10 +171,9 @@ public final class Protocol {
 			JSONObject body = entry.getValue();
 			if (statusCode == StatusCode.GOOD_RESPONSE) {
 				return new AbstractMap.SimpleEntry<>(StatusCode.GOOD_RESPONSE,
-						body.optJSONObject(Key.PAYLOAD.name()));
+						body.optJSONObject(Key.PAYLOAD.toString()));
 			} else if (statusCode == StatusCode.BAD_RESPONSE) {
-				return new AbstractMap.SimpleEntry<>(StatusCode.BAD_RESPONSE,
-						body.optString(Key.MESSAGE.name()));
+				return new AbstractMap.SimpleEntry<>(StatusCode.BAD_RESPONSE, body.optString(Key.MESSAGE.toString()));
 			} else {
 				throw new ProtocolException(INVALID_STATUS_CODE);
 			}
@@ -198,37 +214,58 @@ public final class Protocol {
 		stream.flush();
 	}
 
+	/**
+	 * Writes a non-successful response to the given OutputStream
+	 *
+	 * @param stream    the stream to write to
+	 * @param exception the Exception to send
+	 * @throws IOException if writing fails
+	 */
 	public static void writeBadResponse(OutputStream stream, Exception exception) throws IOException {
 		JSONObject body = new JSONObject();
 		if (exception != null) {
 			try (StringWriter sw = new StringWriter(); PrintWriter pw = new PrintWriter(sw)) {
 				exception.printStackTrace(pw);
-				body.put(Key.MESSAGE.name(), sw.toString());
+				body.put(Key.MESSAGE.toString(), sw.toString());
 			}
 		}
 		write(stream, StatusCode.BAD_RESPONSE, body);
 	}
 
+	/**
+	 * Writes a successful response to the given OutputStream
+	 *
+	 * @param stream  the stream to write to
+	 * @param payload the response payload
+	 * @throws IOException if writing fails
+	 */
 	public static void writeGoodResponse(OutputStream stream, Object payload) throws IOException {
 		JSONObject body = new JSONObject();
 		if (payload != null) {
-			body.put(Key.PAYLOAD.name(), payload);
+			body.put(Key.PAYLOAD.toString(), payload);
 		}
 		write(stream, StatusCode.GOOD_RESPONSE, body);
 	}
 
+	/**
+	 * Writes a request to the given OutputStream
+	 *
+	 * @param stream  the stream to write to
+	 * @param method  the method to request
+	 * @param payload the request payload
+	 * @throws IOException if writing fails
+	 */
 	public static void writeRequest(OutputStream stream, String method, Object payload) throws IOException {
 		JSONObject body = new JSONObject();
 		if (method != null) {
-			body.put(Key.METHOD.name(), method);
+			body.put(Key.METHOD.toString(), method);
 		}
 		if (payload != null) {
-			body.put(Key.PAYLOAD.name(), payload);
+			body.put(Key.PAYLOAD.toString(), payload);
 		}
 		write(stream, StatusCode.REQUEST, body);
 	}
 
 	private Protocol() {
 	}
-
 }
