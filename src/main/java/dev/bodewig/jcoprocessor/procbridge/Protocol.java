@@ -171,7 +171,7 @@ public final class Protocol {
 			JSONObject body = entry.getValue();
 			if (statusCode == StatusCode.GOOD_RESPONSE) {
 				return new AbstractMap.SimpleEntry<>(StatusCode.GOOD_RESPONSE,
-						body.optJSONObject(Key.PAYLOAD.toString()));
+						body.opt(Key.PAYLOAD.toString()));
 			} else if (statusCode == StatusCode.BAD_RESPONSE) {
 				return new AbstractMap.SimpleEntry<>(StatusCode.BAD_RESPONSE, body.optString(Key.MESSAGE.toString()));
 			} else {
