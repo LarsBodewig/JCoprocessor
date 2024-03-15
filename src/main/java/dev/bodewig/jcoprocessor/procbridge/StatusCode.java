@@ -8,7 +8,18 @@ package dev.bodewig.jcoprocessor.procbridge;
  */
 public enum StatusCode {
 
-	BAD_RESPONSE(2), GOOD_RESPONSE(1), REQUEST(0);
+	/**
+	 * A bad response
+	 */
+	BAD_RESPONSE(2),
+	/**
+	 * A good response
+	 */
+	GOOD_RESPONSE(1),
+	/**
+	 * A request
+	 */
+	REQUEST(0);
 
 	/**
 	 * Find the StatusCode from the int representation

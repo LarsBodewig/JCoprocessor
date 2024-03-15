@@ -8,7 +8,18 @@ package dev.bodewig.jcoprocessor.procbridge;
  */
 public enum Key {
 
-	MESSAGE, METHOD, PAYLOAD;
+	/**
+	 * A message
+	 */
+	MESSAGE,
+	/**
+	 * A method
+	 */
+	METHOD,
+	/**
+	 * A payload
+	 */
+	PAYLOAD;
 
 	@Override
 	public String toString() {

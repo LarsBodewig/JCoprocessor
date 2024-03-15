@@ -13,7 +13,7 @@ public class ClientException extends RuntimeException {
 	/**
 	 * Creates a ClientException with a cause
 	 *
-	 * @param cause
+	 * @param cause the cause
 	 */
 	public ClientException(Throwable cause) {
 		super(cause);

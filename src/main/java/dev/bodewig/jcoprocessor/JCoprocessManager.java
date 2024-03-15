@@ -24,6 +24,9 @@ import dev.bodewig.jcoprocessor.procbridge.Server;
  */
 public class JCoprocessManager {
 
+	private JCoprocessManager() {
+	}
+
 	private static final Set<JCoprocess> processes = new HashSet<>();
 
 	/**

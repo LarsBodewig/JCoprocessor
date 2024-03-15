@@ -10,8 +10,7 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
+import dev.bodewig.jcoprocessor.util.Numeric;
 
 /**
  * Connects to a Server and sends requests
@@ -108,37 +107,65 @@ public class Client implements AutoCloseable {
 	}
 
 	/**
-	 * Sends a request to the target port
+	 * Sends a request to the target port and casts the result to the correct Number
+	 * type
 	 *
-	 * @param <T>     the expected return type for comfort (supports Boolean,
-	 *                Double, Integer, JSONArray, JSONObject, Long, String)
-	 * @param method  the requested method
-	 * @param payload the request payload
+	 * @param <T>    the expected return type for comfort (supports Double, Integer,
+	 *               Long)
+	 * @param method the requested method
+	 * @param type   Double, Integer or Long
 	 * @return the response payload
 	 * @throws ClientException  if an exception occurs in the Client
 	 * @throws TimeoutException if the request reaches the configured timeout
 	 * @throws ServerException  if an exception occurs in the Server
 	 */
-	public final <T> T request(String method, Boolean payload)
+	public final <T extends Number> T request(String method, Class<T> type)
 			throws ClientException, TimeoutException, ServerException {
-		return request(method, (Object) payload);
+		return request(method, type);
 	}
 
 	/**
 	 * Sends a request to the target port
 	 *
-	 * @param <T>     the expected return type for comfort (supports Boolean,
-	 *                Double, Integer, JSONArray, JSONObject, Long, String)
-	 * @param method  the requested method
-	 * @param payload the request payload
+	 * @param <T>    the expected return type for comfort (supports Boolean, Double,
+	 *               Integer, JSONArray, JSONObject, Long, String)
+	 * @param method the requested method
 	 * @return the response payload
 	 * @throws ClientException  if an exception occurs in the Client
 	 * @throws TimeoutException if the request reaches the configured timeout
 	 * @throws ServerException  if an exception occurs in the Server
 	 */
-	public final <T> T request(String method, Double payload)
+	public final <T> T request(String method) throws ClientException, TimeoutException, ServerException {
+		return request(method, (Object) null);
+	}
+
+	/**
+	 * Sends a request to the target port and casts the result to the correct Number
+	 * type
+	 *
+	 * @param <T>     the expected return type for comfort (supports Double,
+	 *                Integer, Long)
+	 * @param method  the requested method
+	 * @param payload the request payload (supports Boolean, Double, Integer,
+	 *                JSONArray, JSONObject, Long, String)
+	 * @param type    Double, Integer or Long
+	 * @return the response payload
+	 * @throws ClientException  if an exception occurs in the Client
+	 * @throws TimeoutException if the request reaches the configured timeout
+	 * @throws ServerException  if an exception occurs in the Server
+	 */
+	@SuppressWarnings("unchecked")
+	public final <T extends Number> T request(String method, Object payload, Class<T> type)
 			throws ClientException, TimeoutException, ServerException {
-		return request(method, (Object) payload);
+		Number response = request(method, payload);
+		if (type.equals(Double.class)) {
+			return (T) Numeric.doubleBoxed(response);
+		} else if (type.equals(Long.class)) {
+			return (T) Numeric.longBoxed(response);
+		} else if (type.equals(Integer.class)) {
+			return (T) Numeric.intBoxed(response);
+		}
+		throw new IllegalArgumentException("Type " + type + " not supported");
 	}
 
 	/**
@@ -147,93 +174,8 @@ public class Client implements AutoCloseable {
 	 * @param <T>     the expected return type for comfort (supports Boolean,
 	 *                Double, Integer, JSONArray, JSONObject, Long, String)
 	 * @param method  the requested method
-	 * @param payload the request payload
-	 * @return the response payload
-	 * @throws ClientException  if an exception occurs in the Client
-	 * @throws TimeoutException if the request reaches the configured timeout
-	 * @throws ServerException  if an exception occurs in the Server
-	 */
-	public final <T> T request(String method, Integer payload)
-			throws ClientException, TimeoutException, ServerException {
-		return request(method, (Object) payload);
-	}
-
-	/**
-	 * Sends a request to the target port
-	 *
-	 * @param <T>     the expected return type for comfort (supports Boolean,
-	 *                Double, Integer, JSONArray, JSONObject, Long, String)
-	 * @param method  the requested method
-	 * @param payload the request payload
-	 * @return the response payload
-	 * @throws ClientException  if an exception occurs in the Client
-	 * @throws TimeoutException if the request reaches the configured timeout
-	 * @throws ServerException  if an exception occurs in the Server
-	 */
-	public final <T> T request(String method, JSONArray payload)
-			throws ClientException, TimeoutException, ServerException {
-		return request(method, (Object) payload);
-	}
-
-	/**
-	 * Sends a request to the target port
-	 *
-	 * @param <T>     the expected return type for comfort (supports Boolean,
-	 *                Double, Integer, JSONArray, JSONObject, Long, String)
-	 * @param method  the requested method
-	 * @param payload the request payload
-	 * @return the response payload
-	 * @throws ClientException  if an exception occurs in the Client
-	 * @throws TimeoutException if the request reaches the configured timeout
-	 * @throws ServerException  if an exception occurs in the Server
-	 */
-	public final <T> T request(String method, JSONObject payload)
-			throws ClientException, TimeoutException, ServerException {
-		return request(method, (Object) payload);
-	}
-
-	/**
-	 * Sends a request to the target port
-	 *
-	 * @param <T>     the expected return type for comfort (supports Boolean,
-	 *                Double, Integer, JSONArray, JSONObject, Long, String)
-	 * @param method  the requested method
-	 * @param payload the request payload
-	 * @return the response payload
-	 * @throws ClientException  if an exception occurs in the Client
-	 * @throws TimeoutException if the request reaches the configured timeout
-	 * @throws ServerException  if an exception occurs in the Server
-	 */
-	public final <T> T request(String method, Long payload) throws ClientException, TimeoutException, ServerException {
-		return request(method, (Object) payload);
-	}
-
-	/**
-	 * Sends a request to the target port
-	 *
-	 * @param <T>     the expected return type for comfort (supports Boolean,
-	 *                Double, Integer, JSONArray, JSONObject, Long, String)
-	 * @param method  the requested method
-	 * @param payload the request payload
-	 * @return the response payload
-	 * @throws ClientException  if an exception occurs in the Client
-	 * @throws TimeoutException if the request reaches the configured timeout
-	 * @throws ServerException  if an exception occurs in the Server
-	 */
-	public final <T> T request(String method, String payload)
-			throws ClientException, TimeoutException, ServerException {
-		return request(method, (Object) payload);
-	}
-
-	/**
-	 * Sends a request to the target port
-	 * <p>
-	 * This method should not be used directly but is visible for other packages
-	 *
-	 * @param <T>     the expected return type for comfort (supports Boolean,
-	 *                Double, Integer, JSONArray, JSONObject, Long, String)
-	 * @param method  the requested method
-	 * @param payload the request payload
+	 * @param payload the request payload (supports Boolean, Double, Integer,
+	 *                JSONArray, JSONObject, Long, String)
 	 * @return the response payload
 	 * @throws ClientException  if an exception occurs in the Client
 	 * @throws TimeoutException if the request reaches the configured timeout
