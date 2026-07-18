@@ -25,11 +25,12 @@ public class MyServer extends Server {
 		if (args.length <= 0) {
 			throw new IllegalArgumentException("Missing argument: port");
 		}
-		int port = Integer.valueOf(args[0]); // read the port from the args
+		int port = Integer.parseInt(args[0]); // read the port from the args
 		new MyServer(port).start(); // start the Server
 	}
 
-	@Override public Object handleRequest(String method, Object payload) {
+	@Override
+    public Object handleRequest(String method, Object payload) {
 		return method + " " + payload;
 	}
 }
@@ -43,10 +44,8 @@ String result = myprocess.request("Hello", "World");
 System.out.println(result); // prints "Hello World"
 ```
 
-Check out the `JCoprocessTest` for another example.
+Check out the [JCoprocessTest](./src/test/java/dev/bodewig/jcoprocessor/JCoprocessTest.java) for another example.
 
 ---
 
 This project is based on a fork of the [Java implementation of ProcBridge](https://github.com/gongzhang/procbridge-java).
-
-Run `git config --add include.path ../.gitconfig` to include the template config in your project config.

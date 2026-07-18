@@ -1,0 +1,72 @@
+# Updates the maven version and checks in
+# ---
+# Add the following Github secrets from your Secret Manager
+# - PERSONAL_GITHUB_TOKEN
+
+name: Version
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'New version (empty for SNAPSHOT/next patch)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  version:
+    runs-on: ubuntu-slim
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+      - name: Evaluate old version
+        run: |
+          echo "oldVersion=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> "$GITHUB_ENV"
+      - name: Set next snapshot
+        if: ${{ inputs.version == '' && !endsWith(env.oldVersion, '-SNAPSHOT') }}
+        run: |
+          ./mvnw -B versions:set -DgenerateBackupPoms=false -DnextSnapshot=true
+          echo "commitMsg=Next snapshot version" >> "$GITHUB_ENV"
+      - name: Remove snapshot
+        if: ${{ inputs.version == '' && endsWith(env.oldVersion, '-SNAPSHOT') }}
+        run: |
+          ./mvnw -B versions:set -DgenerateBackupPoms=false -DremoveSnapshot=true
+          echo "commitMsg=Remove snapshot version" >> "$GITHUB_ENV"
+      - name: Set version
+        if: ${{ inputs.version != '' }}
+        run: |
+          ./mvnw -B versions:set -DgenerateBackupPoms=false -DnewVersion=${{ inputs.version }}
+          echo "commitMsg=Set version to ${{ inputs.version }}" >> "$GITHUB_ENV"
+      - name: Evaluate new version
+        run: |
+          echo "newVersion=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> "$GITHUB_ENV"
+      - name: Update version in README
+        uses: richardrigutins/replace-in-files@v2
+        with:
+          files: 'README.md'
+          search-text: '${{ env.oldVersion }}'
+          replacement-text: '${{ env.newVersion }}'
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "$commitMsg"
+      - name: Set and push tag
+        if: ${{ inputs.version == '' && endsWith(env.oldVersion, '-SNAPSHOT') }}
+        run: |
+          git tag -a "v${{ env.newVersion }}" -m "v${{ env.newVersion }}" -f
+          git push origin v${{ env.newVersion }} -f
+      - name: Push commit
+        run: |
+          git push -f
