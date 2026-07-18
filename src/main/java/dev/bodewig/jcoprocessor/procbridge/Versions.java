@@ -8,13 +8,13 @@ package dev.bodewig.jcoprocessor.procbridge;
  */
 public final class Versions {
 
-	private static final byte[] V2_0 = { 2, 0 };
+    private static final byte[] V2_0 = {2, 0};
 
-	/**
-	 * The current protocol version
-	 */
-	public static final byte[] CURRENT = V2_0;
+    /**
+     * The current protocol version
+     */
+    public static final byte[] CURRENT = V2_0;
 
-	private Versions() {
-	}
+    private Versions() {
+    }
 }

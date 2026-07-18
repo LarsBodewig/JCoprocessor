@@ -15,50 +15,50 @@ import java.util.logging.Logger;
  */
 public class Connection implements Runnable {
 
-	private static final Logger logger = Logger.getLogger(Connection.class.getName());
+    private static final Logger logger = Logger.getLogger(Connection.class.getName());
 
-	private final Server server;
-	private final Socket socket;
+    private final Server server;
+    private final Socket socket;
 
-	/**
-	 * Creates a new Connection between the given Server and socket
-	 *
-	 * @param server the Server handling the request
-	 * @param socket the socket to read from and write to
-	 */
-	public Connection(Server server, Socket socket) {
-		this.server = server;
-		this.socket = socket;
-	}
+    /**
+     * Creates a new Connection between the given Server and socket
+     *
+     * @param server the Server handling the request
+     * @param socket the socket to read from and write to
+     */
+    public Connection(Server server, Socket socket) {
+        this.server = server;
+        this.socket = socket;
+    }
 
-	@Override
-	public void run() {
-		try (OutputStream os = socket.getOutputStream(); InputStream is = socket.getInputStream()) {
+    @Override
+    public void run() {
+        try (OutputStream os = socket.getOutputStream(); InputStream is = socket.getInputStream()) {
 
-			while (!Thread.currentThread().isInterrupted()) {
-				Map.Entry<String, Object> req;
-				do {
-					req = Protocol.readRequest(is).orElse(null);
-				} while (!Thread.currentThread().isInterrupted() && !socket.isInputShutdown() && req == null);
-				String method = req.getKey();
-				Object payload = req.getValue();
+            while (!Thread.currentThread().isInterrupted()) {
+                Map.Entry<String, Object> req;
+                do {
+                    req = Protocol.readRequest(is).orElse(null);
+                } while (!Thread.currentThread().isInterrupted() && !socket.isInputShutdown() && req == null);
+                String method = req.getKey();
+                Object payload = req.getValue();
 
-				Object result = null;
-				Exception exception = null;
-				try {
-					result = server.handleRequest(method, payload);
-				} catch (Exception ex) {
-					exception = ex;
-				}
+                Object result = null;
+                Exception exception = null;
+                try {
+                    result = server.handleRequest(method, payload);
+                } catch (Exception ex) {
+                    exception = ex;
+                }
 
-				if (exception != null) {
-					Protocol.writeBadResponse(os, exception);
-				} else {
-					Protocol.writeGoodResponse(os, result);
-				}
-			}
-		} catch (Exception ex) {
-			logger.log(Level.SEVERE, "Exception occured in connection on port " + server.getPort(), ex);
-		}
-	}
+                if (exception != null) {
+                    Protocol.writeBadResponse(os, exception);
+                } else {
+                    Protocol.writeGoodResponse(os, result);
+                }
+            }
+        } catch (Exception ex) {
+            logger.log(Level.SEVERE, "Exception occurred in connection on port " + server.getPort(), ex);
+        }
+    }
 }

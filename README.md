@@ -10,7 +10,7 @@ A JCoprocess is a separate Java Process that can be used to delegate specific ta
 <dependency>
     <groupId>dev.bodewig.jcoprocessor</groupId>
     <artifactId>jcoprocessor</artifactId>
-    <version>2.0.1</version>
+    <version>2.0.3-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -22,7 +22,7 @@ public class MyServer extends Server {
 	public MyServer(int port) { super(port); }
 
 	public static void main(String[] args) {
-		if (args.length <= 0) {
+		if (args.length == 0) {
 			throw new IllegalArgumentException("Missing argument: port");
 		}
 		int port = Integer.parseInt(args[0]); // read the port from the args
