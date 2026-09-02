@@ -23,13 +23,13 @@ jobs:
     - name: Set up JDK
       uses: actions/setup-java@v6.0.0
       with:
-        distribution: 'temurin'
-        java-version: '25'
+        distribution: temurin
+        java-version: latest
         server-id: ossrh
-        server-username: MAVEN_USERNAME
-        server-password: MAVEN_PASSWORD
+        server-username-env-var: MAVEN_USERNAME
+        server-password-env-var: MAVEN_PASSWORD
         gpg-private-key: ${{ secrets.MAVEN_GPG_PRIVATE_KEY }}
-        gpg-passphrase: MAVEN_GPG_PASSPHRASE
+        gpg-passphrase-env-var: MAVEN_GPG_PASSPHRASE
     - name: Publish to Apache Maven Central
       run: ./mvnw clean deploy -B -P release
       env:

@@ -27,8 +27,8 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v6.0.0
         with:
-          distribution: 'temurin'
-          java-version: '25'
+          distribution: temurin
+          java-version: latest
       - name: Evaluate old version
         run: |
           echo "oldVersion=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)" >> "$GITHUB_ENV"
