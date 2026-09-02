@@ -1,0 +1,44 @@
+# Automated jobs to support dependabot
+# ---
+# Add the following DEPENDABOT secrets from your Secret Manager
+# - PERSONAL_GITHUB_TOKEN
+
+name: Dependabot
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+
+permissions:
+  contents: write
+
+jobs:
+  renormalize:
+    runs-on: ubuntu-slim
+    if: ${{ github.actor == 'dependabot[bot]' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          token: ${{ secrets.PERSONAL_GITHUB_TOKEN }}
+      - name: Run Git Renormalize
+        id: git-add
+        run: |
+          git add --renormalize .
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "changes=false" >> $GITHUB_OUTPUT
+          fi
+      - name: Commit and Push changes
+        if: steps.git-add.outputs.changes == 'true'
+        env:
+          PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "[dependabot skip] Renormalize line endings"
+          git push origin "HEAD:$PR_HEAD_REF"
