@@ -33,12 +33,13 @@ jobs:
           else
             echo "changes=false" >> $GITHUB_OUTPUT
           fi
+      - name: Configure git
+        if: steps.git-add.outputs.changes == 'true'
+        uses: ./.github/actions/git
       - name: Commit and Push changes
         if: steps.git-add.outputs.changes == 'true'
         env:
           PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "[dependabot skip] Renormalize line endings"
           git push origin "HEAD:$PR_HEAD_REF"

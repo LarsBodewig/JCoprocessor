@@ -1,0 +1,76 @@
+# Composite action that commits new versions
+# ---
+# Outputs:
+# - oldVersion: The original version string before any changes
+# - newVersion: The updated version string included in the commit.
+
+name: Version
+
+description: 'Composite action that updates the project version in pom.xml files via Maven and synchronizes the version string within README.md.'
+
+inputs:
+  version:
+    description: 'New version (empty for SNAPSHOT/next patch)'
+    required: false
+
+outputs:
+  oldVersion:
+    description: "The original version string before any changes"
+    value: ${{ steps.get_old.outputs.version }}
+  newVersion:
+    description: "The updated version string included in the commit"
+    value: ${{ steps.get_new.outputs.version }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Evaluate old version
+      id: get_old
+      shell: bash
+      run: |
+        VERSION="$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)"
+        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+        echo "### Version" >> "$GITHUB_STEP_SUMMARY"
+        echo "- oldVersion: $VERSION" >> "$GITHUB_STEP_SUMMARY"
+    - name: Set next snapshot
+      if: ${{ inputs.version == '' && !endsWith(steps.get_old.outputs.version, '-SNAPSHOT') }}
+      id: next_snap
+      shell: bash
+      run: |
+        ./mvnw -B versions:set -DgenerateBackupPoms=false -DnextSnapshot=true
+        echo "msg=Next snapshot version" >> "$GITHUB_OUTPUT"
+    - name: Remove snapshot
+      if: ${{ inputs.version == '' && endsWith(steps.get_old.outputs.version, '-SNAPSHOT') }}
+      id: remove_snap
+      shell: bash
+      run: |
+        ./mvnw -B versions:set -DgenerateBackupPoms=false -DremoveSnapshot=true
+        echo "msg=Remove snapshot version" >> "$GITHUB_OUTPUT"
+    - name: Set version
+      if: ${{ inputs.version != '' }}
+      id: set_ver
+      shell: bash
+      run: |
+        ./mvnw -B versions:set -DgenerateBackupPoms=false -DnewVersion="${{ inputs.version }}"
+        echo "msg=Set version to ${{ inputs.version }}" >> "$GITHUB_OUTPUT"
+    - name: Evaluate new version
+      id: get_new
+      shell: bash
+      run: |
+        VERSION="$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)"
+        echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+        echo "- newVersion: $VERSION" >> "$GITHUB_STEP_SUMMARY"
+    - name: Update version in README.md
+      shell: bash
+      run: |
+        EXPR="s|${{ steps.get_old.outputs.version }}|${{ steps.get_new.outputs.version }}|g"
+        sed -i "$EXPR" README.md
+    - name: Configure git
+      uses: ./.github/actions/git
+    - name: Commit changes
+      shell: bash
+      run: |
+        git add .
+        COMMIT_MSG="${{ steps.remove_snap.outputs.msg || steps.next_snap.outputs.msg || steps.set_ver.outputs.msg }}"
+        git commit -m "$COMMIT_MSG"
+        echo "**Added commit:** $COMMIT_MSG" >> "$GITHUB_STEP_SUMMARY"

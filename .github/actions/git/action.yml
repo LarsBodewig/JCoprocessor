@@ -1,0 +1,14 @@
+# Configures "github-actions[bot]" as committer
+
+name: Git
+
+description: 'Configures "github-actions[bot]" as committer.'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Configure git
+      shell: bash
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

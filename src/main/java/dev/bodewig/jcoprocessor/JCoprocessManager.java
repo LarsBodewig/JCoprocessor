@@ -145,6 +145,7 @@ public class JCoprocessManager {
      * @return Future completing when all requests were answered
      */
     public static synchronized Future<Void> broadcast(String method, Object payload) {
+        @SuppressWarnings("resource")
         ExecutorService executor = Executors.newCachedThreadPool();
         try {
             return CompletableFuture.allOf(processes.parallelStream()
